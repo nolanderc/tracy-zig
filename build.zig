@@ -23,6 +23,8 @@ pub fn build(b: *std.Build) !void {
         lib.linkSystemLibrary("ws2_32");
     }
 
+    b.installArtifact(lib);
+
     _ = b.addModule("tracy", .{
         .source_file = .{ .path = "tracy.zig" },
         .dependencies = &.{.{
