@@ -27,11 +27,5 @@ pub fn build(b: *std.Build) !void {
 
     _ = b.addModule("tracy", .{
         .source_file = .{ .path = "tracy.zig" },
-        .dependencies = &.{.{
-            .name = "tracy-c",
-            .module = b.createModule(.{
-                .source_file = .{ .path = "public/tracy/TracyC.h" },
-            }),
-        }},
     });
 }

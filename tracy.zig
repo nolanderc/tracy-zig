@@ -1,6 +1,10 @@
+fn currentDir() []const u8 {
+    return std.fs.path.dirname(@src().file) orelse ".";
+}
+
 const c = @cImport({
     @cDefine("TRACY_ENABLE", {});
-    @cInclude("public/tracy/TracyC.h");
+    @cInclude(currentDir() ++ "/public/tracy/TracyC.h");
 });
 
 const std = @import("std");
