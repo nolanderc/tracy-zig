@@ -2,18 +2,20 @@ fn currentDir() []const u8 {
     return std.fs.path.dirname(@src().file) orelse ".";
 }
 
+pub const enabled = std.meta.globalOption("tracy_enabled", bool) orelse true;
+const callstack_enabled = std.meta.globalOption("tracy_capture_callstacks", bool) orelse false;
+
 const c = @cImport({
     @cDefine("TRACY_ENABLE", {});
+    @cDefine(if (callstack_enabled) "TRACY_CALLSTACK" else "TRACY_NO_CALLSTACK", {});
     @cInclude(currentDir() ++ "/public/tracy/TracyC.h");
 });
 
 const std = @import("std");
 
-pub const enabled = std.meta.globalOption("tracy_enable", bool) orelse true;
-
 const has_callstack = @hasDecl(c, "TRACY_HAS_CALLSTACK");
-const callstack_depth = 16;
-const capture_callstack = has_callstack and callstack_depth > 0;
+const callstack_depth = std.meta.globalOption("tracy_callstack_depth", c_int) orelse 16;
+const capture_callstack = callstack_enabled and has_callstack and callstack_depth > 0;
 
 pub fn setThreadName(name: [*:0]const u8) void {
     c.___tracy_set_thread_name(name);
@@ -39,7 +41,7 @@ pub const Color = packed struct(u32) {
 };
 
 pub inline fn zone(comptime src: std.builtin.SourceLocation, name: ?[*:0]const u8) Zone {
-    return zoneColor(src, name, 0);
+    return zoneColor(src, name, std.mem.zeroes(Color));
 }
 
 pub inline fn zoneColor(
