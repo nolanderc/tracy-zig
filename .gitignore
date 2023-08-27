@@ -44,3 +44,5 @@ compile_commands.json
 profiler/build/wasm/Tracy-release.*
 profiler/build/wasm/Tracy-debug.*
 profiler/build/wasm/embed.tracy
+zig-cache
+zig-out

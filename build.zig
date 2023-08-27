@@ -1,0 +1,35 @@
+const std = @import("std");
+
+pub fn build(b: *std.Build) !void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{ .preferred_optimize_mode = .ReleaseFast });
+
+    const lib = b.addStaticLibrary(.{
+        .name = "tracy",
+        .target = target,
+        .optimize = optimize,
+    });
+    lib.defineCMacro("TRACY_ENABLE", "");
+    lib.addCSourceFile(.{
+        .file = .{ .path = "public/TracyClient.cpp" },
+        .flags = &.{},
+    });
+    lib.linkLibCpp();
+
+    if (target.isWindows()) {
+        lib.linkSystemLibrary("advapi32");
+        lib.linkSystemLibrary("dbghelp");
+        lib.linkSystemLibrary("user32");
+        lib.linkSystemLibrary("ws2_32");
+    }
+
+    _ = b.addModule("tracy", .{
+        .source_file = .{ .path = "tracy.zig" },
+        .dependencies = &.{.{
+            .name = "tracy-c",
+            .module = b.createModule(.{
+                .source_file = .{ .path = "public/tracy/TracyC.h" },
+            }),
+        }},
+    });
+}
