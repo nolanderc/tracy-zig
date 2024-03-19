@@ -2,8 +2,14 @@ fn currentDir() []const u8 {
     return std.fs.path.dirname(@src().file) orelse ".";
 }
 
-pub const enabled = std.meta.globalOption("tracy_enabled", bool) orelse true;
-const callstack_enabled = std.meta.globalOption("tracy_capture_callstacks", bool) orelse false;
+fn globalOption(comptime name: []const u8, comptime T: type) ?T {
+    const root = @import("root");
+    if (@hasDecl(root, name)) return @field(root, name);
+    return null;
+}
+
+pub const enabled = globalOption("tracy_enabled", bool) orelse true;
+const callstack_enabled = globalOption("tracy_capture_callstacks", bool) orelse false;
 
 const c = if (enabled)
     @cImport({
@@ -17,7 +23,7 @@ else
 const std = @import("std");
 
 const has_callstack = @hasDecl(c, "TRACY_HAS_CALLSTACK");
-const callstack_depth = std.meta.globalOption("tracy_callstack_depth", c_int) orelse 16;
+const callstack_depth = globalOption("tracy_callstack_depth", c_int) orelse 16;
 const capture_callstack = callstack_enabled and has_callstack and callstack_depth > 0;
 
 pub fn setThreadName(name: [*:0]const u8) void {
