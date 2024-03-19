@@ -9,7 +9,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    lib.disable_sanitize_c = true;
+    lib.root_module.sanitize_c = false;
     lib.defineCMacro("TRACY_ENABLE", "");
     lib.addCSourceFile(.{
         .file = .{ .path = "public/TracyClient.cpp" },
@@ -17,7 +17,7 @@ pub fn build(b: *std.Build) !void {
     });
     lib.linkLibCpp();
 
-    if (target.isWindows()) {
+    if (target.result.os.tag == .windows) {
         lib.linkSystemLibrary("advapi32");
         lib.linkSystemLibrary("dbghelp");
         lib.linkSystemLibrary("user32");
@@ -27,6 +27,6 @@ pub fn build(b: *std.Build) !void {
     b.installArtifact(lib);
 
     _ = b.addModule("tracy", .{
-        .source_file = .{ .path = "tracy.zig" },
+        .root_source_file = .{ .path = "tracy.zig" },
     });
 }
